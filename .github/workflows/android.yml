@@ -5,7 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -24,41 +24,19 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
       
-    - name: Make gradlew executable
-      run: chmod +x ./gradlew
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
       
-    - name: Validate Gradle Wrapper
-      run: |
-        if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
-          echo "Downloading missing gradle-wrapper.jar..."
-          mkdir -p gradle/wrapper
-          wget https://github.com/gradle/gradle/releases/download/v8.5/gradle-8.5-bin.zip
-          unzip -j gradle-8.5-bin.zip 'gradle-8.5/lib/gradle-wrapper.jar' -d gradle/wrapper/
-          rm gradle-8.5-bin.zip
-        fi
-        
     - name: Build with Gradle
       run: |
-        # 清除之前的构建缓存
+        # 清除缓存，确保重新下载
         ./gradlew clean
-        # 构建debug版本
-        ./gradlew assembleDebug --stacktrace
+        # 构建debug APK
+        ./gradlew assembleDebug
       
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: EyeProtector-APK
-        path: |
-          app/build/outputs/apk/debug/*.apk
-          app/build/outputs/apk/debug/output-metadata.json
-        retention-days: 7
-        
-    - name: Upload build logs
-      if: failure()
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-logs
-        path: |
-          app/build/reports/
-          app/build/outputs/
+        name: app-debug
+        path: app/build/outputs/apk/debug/app-debug.apk
         retention-days: 7
