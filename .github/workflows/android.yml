@@ -1,0 +1,38 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+      
+    - name: 设置JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: 授予gradlew执行权限
+      run: chmod +x ./gradlew
+      
+    - name: 设置Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: 构建Debug APK
+      run: ./gradlew assembleDebug
+      
+    - name: 上传APK文件
+      uses: actions/upload-artifact@v4
+      with:
+        name: EyeProtector-APK
+        path: app/build/outputs/apk/debug/*.apk
+        retention-days: 7
